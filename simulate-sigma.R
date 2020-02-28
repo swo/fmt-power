@@ -5,16 +5,9 @@
 # you can count on getting a donor with really crazy p.
 
 library(tidyverse)
+source("utils.R")
 
 invlogit <- function(lo) 1 / (1 + exp(-lo))
-this_file <- grep("--file", commandArgs(), value = TRUE) %>%
-  str_match("--file=./(.+)") %>%
-  `[`(, 2)
-
-safe_fisher_test <- function(x) {
-  try(return(fisher.test(x)), silent = TRUE)
-  chisq.test(x)
-}
 
 simulate1 <- function(n_donors, patients_per_donor, sigma) {
   p <- invlogit(rnorm(n_donors, mean = 0, sd = sigma))
@@ -23,21 +16,6 @@ simulate1 <- function(n_donors, patients_per_donor, sigma) {
   mat <- matrix(c(success, fail), ncol = 2)
   test <- safe_fisher_test(mat)
   test$p.value
-}
-
-simulate <- function(n_iter, n_donors, patients_per_group, sigma) {
-  control <- as.list(environment()) %>%
-    `[[<-`("script", this_file) %>%
-    `[[<-`("function", first(sys.call()))
-
-  hash <- digest::digest(control)
-  cache_fn <- str_glue("cache/{hash}.rds")
-  if (file.exists(cache_fn)) return(readRDS(cache_fn))
-
-  results <- map(1:n_iter, ~ simulate1(n_donors, patients_per_group, sigma))
-  saveRDS(results, cache_fn)
-
-  results
 }
 
 n_iter <- 1e3
@@ -51,7 +29,7 @@ results <- crossing(
     patients_per_donor = n_patients / n_donors,
     results = pmap(
       list(n_donors, patients_per_donor, sigma),
-      ~ simulate(n_iter, ..1, ..2, ..3)
+      ~ simulate(simulate1, n_iter, ..1, ..2, ..3)
     ),
     n_sig = map_int(results, ~ sum(. < 0.05)),
     power = n_sig / n_iter
@@ -79,4 +57,4 @@ plot <- display_results %>%
   ) +
   cowplot::theme_half_open()
 
-ggsave("tmp.pdf")
+ggsave("power-sigma.pdf")
