@@ -1,0 +1,38 @@
+import os.path, wget, hashlib # to download files
+
+configfile: "config.yaml"
+
+# Functions -----------------------------------------------------------
+
+def download(url, filepath, md5):
+    if not os.path.isfile(filepath):
+        wget.download(url, filepath)
+
+    with open(filepath, "rb") as f:
+        observed_md5 = hashlib.md5(f.read()).hexdigest()
+        if not observed_md5 == md5:
+            raise RuntimeError(f"Downloaded file {filepath} from url {url}"
+                "has MD5 {observed_md5}, which does not match expected MD5 {md5}")
+
+wildcard_constraints:
+    study="[^\\.]+"
+
+# Rules ---------------------------------------------------------------
+
+STUDIES = config["studies"].keys()
+
+rule all:
+    input: expand("raw/{study}_results/{study}.{file}", study=STUDIES, file=["otu_table.100.denovo", "metadata.txt"])
+
+rule extract:
+    output: "raw/{study}_results/{file}"
+    input: "raw/{study}_results.tar.gz"
+    shell: "tar xvf {input} -C raw/ {wildcards.study}_results/{wildcards.file}"
+
+rule download:
+    output: "raw/{study}_results.tar.gz"
+    params:
+        md5=lambda wc: config["studies"][wc["study"]]["md5"],
+        url=lambda wc, output: config["base_url"] + "/" + os.path.basename(output[0])
+    run:
+        download(params["url"], output[0], params["md5"])
