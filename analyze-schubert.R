@@ -104,10 +104,12 @@ powers <- results %>%
     ciu = map_dbl(test, ~ .$conf.int[2])
   )
 
+dp <- position_dodge(width = 0.25)
 plot <- powers %>%
   ggplot(aes(factor(n), estimate, color = factor(delta_p))) +
   geom_hline(yintercept = 0.05, linetype = 2) +
   geom_hline(yintercept = 0.80, linetype = 2) +
-  geom_pointrange(aes(ymin = cil, ymax = ciu), position = position_dodge(width = 0.25))
+  geom_line(aes(group = factor(delta_p)), position = dp) +
+  geom_pointrange(aes(ymin = cil, ymax = ciu), position = dp)
 
 ggsave("tmp.pdf")
