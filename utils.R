@@ -24,3 +24,29 @@ simulate <- function(f, n_iter, ...) {
     results
   }
 }
+
+results_f <- function(effect_size_f) {
+  crossing(
+    n_donors = c(2, 4, 6, 12, 24),
+    n_patients = c(12, 24, 48, 96, 192, 384),
+  ) %>%
+    filter(n_patients > n_donors) %>%
+    mutate(
+      patients_per_donor = n_patients / n_donors,
+      effect_size = map2_dbl(n_donors, patients_per_donor, effect_size_f)
+    )
+}
+
+plot_f <- function(results) {
+  results %>%
+    mutate_at(c("n_donors", "n_patients"), factor) %>%
+    ggplot(aes(n_donors, n_patients)) +
+    geom_tile(aes(fill = effect_size)) +
+    geom_text(aes(label = round(effect_size, 2))) +
+    scale_fill_gradient(
+      name = "Effect size",
+      labels = function(x) round(x, 2),
+      low = "white", high = "red"
+    ) +
+    cowplot::theme_half_open()
+}
