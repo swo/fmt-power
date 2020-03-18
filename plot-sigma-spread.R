@@ -13,14 +13,20 @@ n <- 1e4
 eps <- 0.0001
 
 dat <- crossing(
-  sigma = c(0.5, 1.0, 2.0, 2.5),
+  sigma = c(0.3, 1.0, round(sqrt(2), 2), 2.0),
   p = seq(eps, 1 - eps, length.out = n)
 ) %>%
   mutate(y = pdf(p, sigma))
 
 plot <- dat %>%
-  ggplot(aes(p, y, color = factor(sigma))) +
+  mutate_at("sigma", factor) %>%
+  ggplot(aes(p, y, color = sigma)) +
   geom_line() +
+  labs(color = expression(sigma[LO])) +
   cowplot::theme_half_open()
 
 ggsave("fig/sigma-spread.pdf")
+
+# Find critical value of sigma for which distribution is no longer unimodal
+f <- function(sigma) pdf(0.5 + eps, sigma) - pdf(0.5, sigma)
+uniroot(f, c(1, 2))$root - sqrt(2)
