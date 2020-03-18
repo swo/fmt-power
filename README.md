@@ -1,3 +1,7 @@
+# To do
+
+- Break up the plots into simulations and then plotting, to make it quicker
+
 # Journals
 
 - Trials (BMC) (and [this collection](https://www.biomedcentral.com/collections/randomizedtrialsamplesize))
@@ -33,9 +37,3 @@
 Look in lit for σ_patient across IBD patients. Look at σ_donor as saying a
 strong drug's effect?
 
-# Math
-
-Use (discrete) PBA algorithm
-
-R. Waeber, Probabilistic Bisection Search For Stochastic Root-Finding, PhD thesis, Cornell
-University, 2013
