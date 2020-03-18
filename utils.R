@@ -3,9 +3,6 @@ library(tidyverse)
 # Global simulation parameters ----------------------------------------
 
 n_iter <- 1e3
-alpha <- 0.05
-target_power <- 0.8
-uniroot_tol <- 1e-2
 
 # Simulation functions ------------------------------------------------
 
@@ -24,17 +21,17 @@ chisq_p <- function(x) {
   ifelse(is.na(p), 1.0, p)
 }
 
-power_f <- function(simulate_f, n_donors, patients_per_donor, effect_size) {
-  p_values <- map(1:n_iter, ~ simulate_f(n_donors, patients_per_donor, effect_size))
+power_f <- function(simulate_f, n_donors, patients_per_donor, effect_size, alpha = 0.05) {
+  p_values <- map_dbl(1:n_iter, ~ simulate_f(n_donors, patients_per_donor, effect_size))
   mean(p_values <= alpha)
 }
 
-effect_size_f <- function(simulate_f, interval, n_donors, patients_per_donor) {
+effect_size_f <- function(simulate_f, interval, n_donors, patients_per_donor, target_power = 0.8, tol = 1e-3) {
   obj <- function(x) {
     power_f(simulate_f, n_donors, patients_per_donor, x) - target_power
   }
 
-  try(return(uniroot(obj, interval, tol = uniroot_tol)$root), silent = TRUE)
+  try(return(uniroot(obj, interval, tol = tol)$root), silent = TRUE)
   NA
 }
 
