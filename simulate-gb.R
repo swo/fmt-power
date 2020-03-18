@@ -15,10 +15,9 @@ simulate_f <- function(n_donors, patients_per_donor, delta_p) {
   simulate_base(n_donors, patients_per_donor, 0.5, p0, p1)
 }
 
-f <- effect_size_factory("goodbad", simulate_f, c(0.0, 1.0))
-
-results <- results_f(f)
+results <- results_f(simulate_f, c(0.0, 1.0))
 results
 
 plot <- plot_f(results)
+
 ggsave("fig/gb.pdf")

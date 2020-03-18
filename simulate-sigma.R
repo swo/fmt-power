@@ -11,7 +11,6 @@ simulate_f <- function(n_donors, patients_per_donor, sigma) {
 }
 
 interval <- c(1e-4, 3)
-
 results <- results_f(simulate_f, interval)
 results
 
