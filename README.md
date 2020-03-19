@@ -1,9 +1,3 @@
-# To do
-
-- Break up the plots into simulations and then plotting, to make it quicker
-- Rename "obj" into something else. It's only objective functions for maximizing, not root finding
-- utils: Only compute f(xmin) and f(xmax) once each, rather than doing them 2x
-
 # Journals
 
 - Trials (BMC) (and [this collection](https://www.biomedcentral.com/collections/randomizedtrialsamplesize))

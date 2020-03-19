@@ -26,7 +26,3 @@ plot <- dat %>%
   cowplot::theme_half_open()
 
 ggsave("fig/sigma-spread.pdf")
-
-# Find critical value of sigma for which distribution is no longer unimodal
-f <- function(sigma) pdf(0.5 + eps, sigma) - pdf(0.5, sigma)
-uniroot(f, c(1, 2))$root - sqrt(2)

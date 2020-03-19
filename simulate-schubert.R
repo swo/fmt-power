@@ -59,12 +59,13 @@ simulate_f <- function(n, delta_p, phi = 0.5) {
   # if outcomes are all 0 or all 1, pval = 1.0
   if (length(unique(X)) == 1) return(1.0)
 
-  adonis(Y ~ X)$aov.tab$`Pr(>F)`[1]
+  # ignore complete enumeration warnings
+  suppressWarnings(adonis(Y ~ X)$aov.tab$`Pr(>F)`[1])
 }
 
 # multi draw
-simulate_trials <- function(n_trials, n_patients, effect_size) {
-  map_dbl(1:n_trials, ~ simulate_f(n_patients, effect_size))
+simulate_trials <- function(n_patients, effect_size) {
+  map_dbl(1:global_n_trials, ~ simulate_f(n_patients, effect_size))
 }
 
 # memoize
@@ -75,7 +76,7 @@ results <- crossing(
   effect_size = seq(0, 1, length.out = 10)
 ) %>%
   mutate(
-    p_values = pmap(list(n_trials, n_patients, effect_size), f),
+    p_values = pmap(list(n_patients, effect_size), f),
     x = map_dbl(p_values, ~ sum(. <= 0.05)),
     n = map_dbl(p_values, length),
     test = map2(x, n, binom.test),
