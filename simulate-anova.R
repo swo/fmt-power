@@ -8,11 +8,13 @@ results <- results_base %>%
     estimate = pmap_dbl(
       list(n_donors, patients_per_donor, effect_size),
       ~ power.anova.test(groups = ..1, n = ..2, within.var = 1, between.var = ..3)$power
-    )
+    ),
+    lci = estimate,
+    uci = estimate
   )
 
 results %>%
-  select(n_donors, n_patients, effect_size, estimate) %>%
+  select(n_donors, n_patients, effect_size, estimate, lci, uci) %>%
   write_tsv("results/anova.tsv")
 
 plot <- results %>%

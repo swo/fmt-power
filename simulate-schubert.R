@@ -86,7 +86,8 @@ results <- crossing(
   )
 
 results %>%
-  select(n_patients, effect_size, x, n, estimate, lci, uci) %>%
+  mutate(n_donors = NA) %>%
+  select(n_donors, n_patients, effect_size, x, n, estimate, lci, uci) %>%
   write_tsv("results/schubert.tsv")
 
 plot <- results %>%
