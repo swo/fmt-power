@@ -6,9 +6,11 @@ library(tidyverse)
 prob_bisect <- function(f, interval, pc = 0.75, n_bin = 1e3, min_conf = 0.99, trace = FALSE) {
   # check for a priori failure conditions
   message <- NULL
-  if (f(interval[2]) <= f(interval[1])) message <- "Requires an increasing function"
-  if (f(interval[2]) <= 0) message <- "Upper interval not high enough"
-  if (f(interval[1]) > 0) message <- "Lower interval not low enough"
+  f1 <- f(interval[1])
+  f2 <- f(interval[2])
+  if (f2 <= f1) message <- "Requires an increasing function"
+  if (f2 <= 0) message <- "Upper interval not high enough"
+  if (f1 > 0) message <- "Lower interval not low enough"
   if (!is.null(message)) return(list(x = NA, conf = NA, iter = NA, trace = NULL, message = message))
 
   qc <- 1 - pc

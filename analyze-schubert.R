@@ -7,6 +7,7 @@
 
 library(tidyverse)
 library(vegan)
+source("utils.R")
 
 # Load and process ----------------------------------------------------
 
@@ -33,16 +34,9 @@ if (file.exists(dissim_fn)) {
   saveRDS(dissim, dissim_fn)
 }
 
-# Simulate outcomes ---------------------------------------------------
-
-# p0 <- 0.01
-# delta_p <- 0.98
-
-# p <- p0 + metadata$quality * delta_p
-# outcome <- rbinom(nrow(metadata), 1, p)
-
 # Simulate ------------------------------------------------------------
 
+# Which indices in the original data are controls/cases?
 q0idx <- which(metadata$quality == 0)
 q1idx <- which(metadata$quality == 1)
 
@@ -53,63 +47,42 @@ subset_dissim <- function(dissim, idx) {
     as.dist()
 }
 
-simulate1 <- function(n, p0, p1) {
-  X <- c(rbinom(n, 1, p0), rbinom(n, 1, p1))
+simulate_f <- function(n, delta_p, phi = 0.5) {
+  # draw donor qualities
+  n_good <- rbinom(1, n, phi)
+  n_bad <- n - n_good
+  quality <- c(rep(1, n_good), rep(0, n_bad))
 
-  idx <- c(sample(q0idx, n), sample(q1idx, n))
-  Y <- subset_dissim(dissim, idx)
+  # subset dissim matrix
+  good_idx <- sample(q1idx, n_good)
+  bad_idx <- sample(q0idx, n_bad)
+  Y <- subset_dissim(dissim, c(good_idx, bad_idx))
 
-  adonis(Y ~ X)
+  # simulate patient outcomes
+  donor_p <- 0.5 - delta_p / 2 + delta_p * quality
+  X <- rbinom(n, 1, donor_p)
+
+  # if outcomes are all 0 or all 1, pval = 1.0
+  if (length(unique(X)) == 1) return(1.0)
+
+  adonis(Y ~ X)$aov.tab$`Pr(>F)`[1]
 }
 
-simulate <- function(n, p0, p1, n_iter = 1) {
-  control <- list(n = n, p0 = p0, p1 = p1, n_iter = n_iter)
-
-  hash <- digest::digest(control)
-  cache_fn <- str_glue("cache/{hash}.rds")
-  if (file.exists(cache_fn)) return(readRDS(cache_fn)$results)
-
-  results <- map(1:n_iter, ~ simulate1(n, p0, p1))
-  saveRDS(list(control = control, results = results), cache_fn)
-
-  results
+root_factory <- function(n, n_iter = 1e2) {
+  function(x) {
+    print(str_glue("n={n} x={x}"))
+    p_values <- map_dbl(1:n_iter, ~ simulate_f(n, x))
+    mean(p_values <= 0.05) - 0.8
+  }
 }
 
-n_iter <- 50
-results <- crossing(
-  n = c(5, 10, 25, 50, 75),
-  delta_p = c(0.01, 0.25, 0.35, 0.50, 1.0),
-) %>%
-  mutate(test = pmap(list(n, delta_p, n_iter), ~ simulate(..1, 0.5 - ..2 / 2, 0.5 + ..2 / 2, ..3))) %>%
-  unnest() %>%
-  mutate(p = map_dbl(test, ~ .$aov.tab$`Pr(>F)`[1]))
-
-# histogram of p's against N and Δp
-plot <- results %>%
-  ggplot(aes(p)) +
-  facet_grid(delta_p ~ n, scales = "free_y") +
-  geom_histogram(position = "dodge", bins = 20)
-
-# plot of powers
-powers <- results %>%
-  group_by(n, delta_p) %>%
-  summarize(
-    n_total = n(),
-    n_sig = sum(p <= 0.05)
-  ) %>%
+results <- tibble(n = c(5, 10, 25, 50, 75)) %>%
   mutate(
-    test = map2(n_sig, n_total, binom.test),
-    estimate = map_dbl(test, ~ .$estimate),
-    cil = map_dbl(test, ~ .$conf.int[1]),
-    ciu = map_dbl(test, ~ .$conf.int[2])
+    root_f = map(n, root_factory),
+    bisect = map(root_f, ~ prob_bisect(., c(0, 1), n_bin = 1e2, min_conf = 0.8)),
+    effect_size = map_dbl(bisect, ~ .$x)
   )
 
-dp <- position_dodge(width = 0.25)
-plot <- powers %>%
-  ggplot(aes(factor(n), estimate, color = factor(delta_p))) +
-  geom_hline(yintercept = 0.05, linetype = 2) +
-  geom_hline(yintercept = 0.80, linetype = 2) +
-  geom_line(aes(group = factor(delta_p)), position = dp) +
-  geom_pointrange(aes(ymin = cil, ymax = ciu), position = dp)
-
-ggsave("tmp.pdf")
+results %>%
+  select(n, effect_size) %>%
+  write_tsv("cache/schubert.tsv")
