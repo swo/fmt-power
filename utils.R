@@ -2,6 +2,7 @@ library(tidyverse)
 library(memoise)
 
 set.seed(5)
+n_trials <- 1e2
 
 # Safe test function
 chisq_p <- function(x) {
@@ -19,7 +20,7 @@ results_base <- crossing(
   filter(n_patients > n_donors) %>%
   mutate(patients_per_donor = n_patients / n_donors)
 
-results_f <- function(simulate_f, lower, upper, cache, n_grid = 10, n_trials = 1e2) {
+results_f <- function(simulate_f, lower, upper, cache, n_grid = 10, n_trials = n_trials) {
   simulate_trials <- function(n_trials, n_donors, patients_per_donor, effect_size) {
     map_dbl(1:n_trials, ~ simulate_f(n_donors, patients_per_donor, effect_size))
   }

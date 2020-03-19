@@ -1,13 +1,7 @@
 #!/usr/bin/env Rscript --vanilla
 
-# Look at the diarrhea case/control 16S data. Assume "good" donors look like
-# controls and "bad" donors look like cases. Given some N of good and N of bad
-# donors, and some Δp between their efficacies, what's the statistical power of
-# a typical PERMANOVA?
-
-library(tidyverse)
-library(vegan)
 source("utils.R")
+library(vegan)
 
 # Load and process ----------------------------------------------------
 
@@ -68,21 +62,50 @@ simulate_f <- function(n, delta_p, phi = 0.5) {
   adonis(Y ~ X)$aov.tab$`Pr(>F)`[1]
 }
 
-root_factory <- function(n, n_iter = 1e2) {
-  function(x) {
-    print(str_glue("n={n} x={x}"))
-    p_values <- map_dbl(1:n_iter, ~ simulate_f(n, x))
-    mean(p_values <= 0.05) - 0.8
-  }
+# multi draw
+simulate_trials <- function(n_trials, n_patients, effect_size) {
+  map_dbl(1:n_trials, ~ simulate_f(n_patients, effect_size))
 }
 
-results <- tibble(n = c(5, 10, 25, 50, 75)) %>%
+# memoize
+f <- memoise(simulate_trials, cache = cache_filesystem("cache/schubert"))
+
+results <- crossing(
+  n_patients = c(5, 10, 25, 50, 75),
+  effect_size = seq(0, 1, length.out = 10)
+) %>%
   mutate(
-    root_f = map(n, root_factory),
-    bisect = map(root_f, ~ prob_bisect(., c(0, 1), n_bin = 1e2, min_conf = 0.8)),
-    effect_size = map_dbl(bisect, ~ .$x)
+    p_values = pmap(list(n_trials, n_patients, effect_size), f),
+    x = map_dbl(p_values, ~ sum(. <= 0.05)),
+    n = map_dbl(p_values, length),
+    test = map2(x, n, binom.test),
+    estimate = x / n,
+    lci = map_dbl(test, ~ .$conf.int[1]),
+    uci = map_dbl(test, ~ .$conf.int[2])
   )
 
-results %>%
-  select(n, effect_size) %>%
-  write_tsv("cache/schubert.tsv")
+plot <- results %>%
+  # mutate_at(c("n_patients"), ~ fct_rev(factor(.))) %>%
+  ggplot(aes(effect_size, estimate)) +
+  facet_grid(. ~ n_patients) +
+  geom_hline(yintercept = 0.8, linetype = 2) +
+  geom_hline(yintercept = c(0, 1)) +
+  geom_ribbon(aes(ymin = lci, ymax = uci), fill = "gray") +
+  geom_line(size = 0.7) +
+  scale_x_continuous(
+    name = expression(paste("Effect size (", Delta * p, ", %)")),
+    labels = function(x) x * 100,
+    expand = c(0, 0)
+  ) +
+  scale_y_continuous(
+    name = "Statistical power",
+    labels = scales::percent,
+    breaks = c(0, 0.5, 0.8, 1)
+  ) +
+  cowplot::theme_half_open() +
+  theme(
+    panel.spacing = unit(1, "lines"),
+    axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)
+  )
+
+ggsave("fig/schubert.pdf")
