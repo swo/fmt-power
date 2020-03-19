@@ -20,7 +20,7 @@ metadata <- raw_metadata %>%
   select(sample_id, quality) %>%
   arrange(sample_id)
 
-dissim_fn <- "dissim.rds"
+dissim_fn <- "cache/dissim.rds"
 if (file.exists(dissim_fn)) {
   dissim <- readRDS(dissim_fn)
 } else {
