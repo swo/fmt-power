@@ -15,9 +15,14 @@ simulate_f <- function(n_donors, patients_per_donor, delta_p) {
   simulate_base(n_donors, patients_per_donor, 0.5, p0, p1)
 }
 
-results <- results_f(simulate_f, c(0.0, 1.0))
-results
+results <- results_f(simulate_f, 0, 1, "cache/gb")
 
-plot <- plot_f(results)
+plot <- plot_f(results) +
+  scale_x_continuous(
+    name = expression(paste("Effect size (", Delta * p, ", %)")),
+    labels = function(x) x * 100,
+    expand = c(0, 0)
+  ) +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
 
 ggsave("fig/gb.pdf")

@@ -2,10 +2,33 @@
 
 source("utils.R")
 
-f <- function(n_donors, patients_per_donor) {
-  power.anova.test(groups = n_donors, n = patients_per_donor, within.var = 1, power = 0.8)$between.var
-}
+results <- results_base %>%
+  crossing(effect_size = seq(0, 2, length.out = 10)) %>%
+  mutate(
+    estimate = pmap_dbl(
+      list(n_donors, patients_per_donor, effect_size),
+      ~ power.anova.test(groups = ..1, n = ..2, within.var = 1, between.var = ..3)$power
+    )
+  )
 
-results <- results_f(f)
-plot <- plot_f(results)
+plot <- results %>%
+  mutate_at(c("n_patients"), ~ fct_rev(factor(.))) %>%
+  ggplot(aes(effect_size, estimate)) +
+  facet_grid(n_patients ~ n_donors) +
+  geom_hline(yintercept = 0.8, linetype = 2) +
+  geom_hline(yintercept = c(0, 1)) +
+  geom_line(size = 0.7) +
+  scale_x_continuous(
+    name = expression(paste("Effect size (", sigma[donor] / sigma[patient], ")")),
+    expand = c(0, 0),
+    breaks = c(0, 1, 2),
+    labels = c("0", "1", "2")
+  ) +
+  scale_y_continuous(
+    name = "Statistical power",
+    labels = scales::percent,
+    breaks = c(0, 0.5, 0.8, 1)
+  ) +
+  cowplot::theme_half_open()
+
 ggsave("fig/anova.pdf")

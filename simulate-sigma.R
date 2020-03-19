@@ -10,26 +10,11 @@ simulate_f <- function(n_donors, patients_per_donor, sigma) {
   chisq_p(cbind(success, patients_per_donor - success))
 }
 
-interval <- c(1e-4, 3)
-results <- results_f(simulate_f, interval)
-results
+results <- results_f(simulate_f, 1e-4, 3, "cache/sigma")
 
-plot <- plot_f(results)
+plot <- plot_f(results) +
+  scale_x_continuous(
+    name = expression(paste("Effect size (", sigma[LO], ")"))
+  )
+
 ggsave("fig/sigma.pdf")
-
-# Run spot checks
-data_f <- function(f) {
-  tibble(x = seq(interval[1], interval[2], length.out = 10)) %>%
-    mutate(y = map_dbl(x, f))
-}
-
-check_plot <- results %>%
-  filter(patients_per_donor > 1) %>%
-  mutate(data = map(obj, data_f)) %>%
-  select(n_donors, n_patients, data) %>%
-  unnest(cols = c(data)) %>%
-  ggplot(aes(x, y, color = factor(n_patients))) +
-  facet_wrap(~ n_donors) +
-  geom_line()
-
-ggsave("fig/sigma-spot-check.pdf")
