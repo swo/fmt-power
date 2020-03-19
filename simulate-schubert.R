@@ -14,7 +14,7 @@ metadata <- raw_metadata %>%
   select(sample_id, quality) %>%
   arrange(sample_id)
 
-dissim_fn <- "cache/dissim.rds"
+dissim_fn <- "cache/schubert/dissim.rds"
 if (file.exists(dissim_fn)) {
   dissim <- readRDS(dissim_fn)
 } else {
@@ -84,6 +84,10 @@ results <- crossing(
     lci = map_dbl(test, ~ .$conf.int[1]),
     uci = map_dbl(test, ~ .$conf.int[2])
   )
+
+results %>%
+  select(n_patients, effect_size, x, n, estimate, lci, uci) %>%
+  write_tsv("results/schubert.tsv")
 
 plot <- results %>%
   # mutate_at(c("n_patients"), ~ fct_rev(factor(.))) %>%

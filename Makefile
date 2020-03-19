@@ -10,16 +10,16 @@ all: $(TARGETS)
 clean:
 	rm -rf fig/* cache/*
 
-fig/sigma.pdf: $(SIGMA_SCRIPT) utils.R
+fig/sigma.pdf results/sigma.tsv: $(SIGMA_SCRIPT) utils.R
 	./$(SIGMA_SCRIPT)
 
-fig/gb.pdf: $(GB_SCRIPT) utils.R
+fig/gb.pdf results/gb.tsv: $(GB_SCRIPT) utils.R
 	./$(GB_SCRIPT)
 
-fig/anova.pdf: $(ANOVA_SCRIPT) utils.R
+fig/anova.pdf results/anova.tsv: $(ANOVA_SCRIPT) utils.R
 	./$(ANOVA_SCRIPT)
 
-fig/schubert.pdf: $(SCHUBERT_SCRIPT) utils.R
+fig/schubert.pdf results/schubert.tsv: $(SCHUBERT_SCRIPT) utils.R
 	./$(SCHUBERT_SCRIPT)
 
 fig/sigma-spread.pdf: $(SPREAD_SCRIPT)

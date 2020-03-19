@@ -12,6 +12,10 @@ simulate_f <- function(n_donors, patients_per_donor, sigma) {
 
 results <- results_f(simulate_f, 1e-4, 3, "cache/sigma")
 
+results %>%
+  select(n_donors, n_patients, effect_size, x, n, estimate, lci, uci) %>%
+  write_tsv("results/sigma.tsv")
+
 plot <- plot_f(results) +
   scale_x_continuous(
     name = expression(paste("Effect size (", sigma[LO], ")"))

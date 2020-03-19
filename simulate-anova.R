@@ -11,6 +11,10 @@ results <- results_base %>%
     )
   )
 
+results %>%
+  select(n_donors, n_patients, effect_size, estimate) %>%
+  write_tsv("results/anova.tsv")
+
 plot <- results %>%
   mutate_at(c("n_patients"), ~ fct_rev(factor(.))) %>%
   ggplot(aes(effect_size, estimate)) +
