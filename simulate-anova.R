@@ -29,6 +29,7 @@ plot <- results %>%
     labels = scales::percent,
     breaks = c(0, 0.5, 0.8, 1)
   ) +
-  cowplot::theme_half_open()
+  cowplot::theme_half_open() +
+  theme(panel.spacing = unit(1, "lines"))
 
 ggsave("fig/anova.pdf")

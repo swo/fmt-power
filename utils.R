@@ -47,11 +47,12 @@ plot_f <- function(results) {
     geom_hline(yintercept = 0.8, linetype = 2) +
     geom_hline(yintercept = c(0, 1)) +
     geom_ribbon(aes(ymin = lci, ymax = uci), fill = "gray") +
-    geom_line(size = 1.5) +
+    geom_line(size = 0.7) +
     scale_y_continuous(
       name = "Statistical power",
       labels = scales::percent,
       breaks = c(0, 0.5, 0.8, 1)
     ) +
-    cowplot::theme_half_open()
+    cowplot::theme_half_open() +
+    theme(panel.spacing = unit(1, "lines"))
 }
