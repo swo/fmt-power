@@ -1,9 +1,10 @@
 # Power calculations for detecting differences in efficacy of fecal microbiota transplantation donors
 
-## Journals
+## To do
 
-- Trials (BMC) (and [this collection](https://www.biomedcentral.com/collections/randomizedtrialsamplesize))
-- Contemporary Clinical Trials
+- Tweak the number of patients in the 16S analysis, to take full advantage of the data size
+- Tweak the Makefile to account for the separate plotting and results scripts for 16S
+- Turn the raw data Snakefile into a Makefile?
 
 ## Outline
 
