@@ -40,7 +40,7 @@ rule analyze:
 rule analyze_16s:
     output: "results/16s.tsv"
     input:
-        expand("data/{study}_results/{study}.file}", study=SIMS_16S, faile = ["otu_table.100.denovo", "metadata.txt"]),
+        expand("data/{study}_results/{study}.{file}", study=SIMS_16S, file=["otu_table.100.denovo", "metadata.txt"]),
         "simulate-16s.R", "utils.R"
     shell: "./simulate-16s.R"
 
