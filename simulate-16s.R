@@ -52,9 +52,8 @@ simulate_f <- function(dissim, case_idx, control_idx, n, delta_p, phi = 0.5) {
   quality <- c(rep(1, n_good), rep(0, n_bad))
 
   # subset dissim matrix
-  print(str_glue("ngood={n_good} nbad={n_bad}"))
-  good_idx <- sample(control_idx, n_good)
-  bad_idx <- sample(case_idx, n_bad)
+  good_idx <- sample(control_idx, n_good, replace = TRUE)
+  bad_idx <- sample(case_idx, n_bad, replace = TRUE)
   Y <- subset_dissim(dissim, c(good_idx, bad_idx))
 
   # simulate patient outcomes
@@ -69,7 +68,7 @@ simulate_f <- function(dissim, case_idx, control_idx, n, delta_p, phi = 0.5) {
 }
 
 base_results <- crossing(
-  n_patients = c(5, 10, 25, 50, 75),
+  n_patients = c(12, 24, 48, 96, 192),
   effect_size = seq(0, 1, length.out = 10)
 )
 
@@ -79,8 +78,6 @@ results_f <- function(study_name, metadata_clean_f) {
   dissim <- study_data$dissim
 
   stopifnot(all(nrow(metadata) == dim(dissim)))
-  print(study_name)
-  print(count(metadata, case_control))
 
   # Which indices in the original data are controls/cases?
   case_idx <- which(metadata$case_control == "case")
