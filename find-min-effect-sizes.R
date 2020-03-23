@@ -2,6 +2,8 @@
 
 library(tidyverse)
 
+args <- commandArgs(trailingOnly = TRUE)
+
 find_root <- function(data, target = 0.8) {
   model <- loess(value ~ effect_size, data = data)
   f <- function(x) predict(model, newdata = list(effect_size = x)) - target
@@ -9,7 +11,7 @@ find_root <- function(data, target = 0.8) {
   uniroot(f, range(model$x))$root
 }
 
-results <- tibble(fn = list.files("results/", full.names = TRUE)) %>%
+results <- tibble(fn = args) %>%
   mutate(
     data = map(fn, read_tsv),
     simulation = str_split_fixed(basename(fn), "\\.", 2)[, 1]

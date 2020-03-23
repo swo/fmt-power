@@ -3,6 +3,4 @@ studies:
     md5: 4655b22631158c23cf1d0fb702823c56
   ob_goodrich:
     md5: 9f3fc0fa2a3e2fcfc6cbf24c99e9762d
-  ibd_gevers_2014:
-    md5: 10ba9aeeb1894bddc8f712fa8ad4578c
 base_url: https://zenodo.org/record/1146764/files

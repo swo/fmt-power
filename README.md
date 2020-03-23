@@ -2,10 +2,6 @@
 
 ## To do
 
-- Tweak the number of patients in the 16S analysis, to take full advantage of the data size
-- Tweak the Makefile to account for the separate plotting and results scripts for 16S
-- Turn the raw data Snakefile into a Makefile?
-
 ## Outline
 
 ### Model donors as Gaussian LO
