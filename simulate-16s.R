@@ -112,7 +112,6 @@ cdi_clean <- function(df) {
 }
 
 cdi_results <- results_f("cdi_schubert", cdi_clean)
-write_tsv(cdi_results, "results/cdi_schubert.tsv")
 
 ob_clean <- function(df) {
   df %>%
@@ -121,5 +120,9 @@ ob_clean <- function(df) {
     mutate(case_control = recode(DiseaseState, "H" = "control", "OB" = "case"))
 }
 
-ob_results <- results_f("ob_goodrich", ob_clean)
-write_tsv(ob_results, "results/ob_goodrich.tsv")
+results <- bind_rows(
+  mutate(ob_results, simulation = "ob_goodrich"),
+  mutate(cdi_results, simulation = "cdi_schubert")
+)
+
+write_tsv(results, "results/16s.tsv")

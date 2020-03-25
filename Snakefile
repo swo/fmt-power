@@ -1,6 +1,6 @@
-FIGS = ["sigma", "gb", "anova", "16s", "sigma-spread"]
-SIMS_BASIC = ["sigma", "gb", "anova"]
-SIMS_16S = ["ob_goodrich", "cdi_schubert"]
+SIMS = ["sigma", "gb", "anova", "16s"]
+STUDIES = ["ob_goodrich", "cdi_schubert"]
+FIGS = SIMS + ["sigma-spread"]
 
 configfile: "config.yaml"
 
@@ -17,18 +17,18 @@ rule clean:
 
 rule x16s_plot:
     output: "fig/16s.pdf"
-    input: "plot-16s.R", expand("results/{sim}.tsv", sim=SIMS_16S)
+    input: "plot-16s.R", expand("results/{study}.tsv", study=STUDIES)
     shell: "./plot-16s.R"
 
 rule sigma_plot:
-    output: "fig/sigma-spread.R"
+    output: "fig/sigma-spread.pdf"
     input: "plot-sigma-spread.R"
     shell: "./plot-sigma-spread.R"
 
 rule table:
     output: "results/min-effect-sizes.tsv"
     input:
-        files=expand("results/{sim}.tsv", sim=SIMS_BASIC + SIMS_16S),
+        files=expand("results/{sim}.tsv", sim=SIMS),
         script="find-min-effect-sizes.R"
     shell: "./find-min-effect-sizes.R {input.files}"
 
@@ -40,7 +40,7 @@ rule analyze:
 rule analyze_16s:
     output: "results/16s.tsv"
     input:
-        expand("data/{study}_results/{study}.{file}", study=SIMS_16S, file=["otu_table.100.denovo", "metadata.txt"]),
+        expand("data/{study}_results/{study}.{file}", study=STUDIES, file=["otu_table.100.denovo", "metadata.txt"]),
         "simulate-16s.R", "utils.R"
     shell: "./simulate-16s.R"
 

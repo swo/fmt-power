@@ -14,7 +14,11 @@ find_root <- function(data, target = 0.8) {
 results <- tibble(fn = args) %>%
   mutate(
     data = map(fn, read_tsv),
-    simulation = str_split_fixed(basename(fn), "\\.", 2)[, 1]
+    simulation = if_else(
+      is.na(simulation),
+      str_split_fixed(basename(fn), "\\.", 2)[, 1],
+      simulation
+    )
   ) %>%
   unnest(cols = c(data)) %>%
   select_at(c("simulation", "n_donors", "n_patients", "effect_size", "estimate", "lci", "uci")) %>%
