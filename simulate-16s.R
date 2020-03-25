@@ -6,8 +6,8 @@ library(vegan)
 # Load and process ----------------------------------------------------
 
 load_study_data1 <- function(study_name, metadata_clean_f) {
-  otu_fn <- str_glue("data/raw/{study_name}_results/{study_name}.otu_table.100.denovo")
-  metadata_fn <- str_glue("data/raw/{study_name}_results/{study_name}.metadata.txt")
+  otu_fn <- str_glue("data/{study_name}_results/{study_name}.otu_table.100.denovo")
+  metadata_fn <- str_glue("data/{study_name}_results/{study_name}.metadata.txt")
 
   metadata <- read_tsv(metadata_fn) %>%
     metadata_clean_f() %>%
@@ -34,7 +34,7 @@ load_study_data1 <- function(study_name, metadata_clean_f) {
   list(dissim = dissim, metadata = metadata)
 }
 
-load_study_data <- memoise(load_study_data1, cache = cache_filesystem("cache/"))
+load_study_data <- memoise(load_study_data1, cache = cache_filesystem("cache/study_data/"))
 
 # Simulate ------------------------------------------------------------
 
@@ -64,7 +64,7 @@ simulate_f <- function(dissim, case_idx, control_idx, n, delta_p, phi = 0.5) {
   if (length(unique(X)) == 1) return(1.0)
 
   # ignore complete enumeration warnings
-  adonis(Y ~ X)$aov.tab$`Pr(>F)`[1]
+  adonis(Y ~ X, parallel = 2)$aov.tab$`Pr(>F)`[1]
 }
 
 base_results <- crossing(
@@ -93,6 +93,7 @@ results_f <- function(study_name, metadata_clean_f) {
 
   base_results %>%
     mutate(
+      simulation = study_name,
       n_donors = NA,
       p_values = pmap(list(n_patients, effect_size), f),
       x = map_dbl(p_values, ~ sum(. <= 0.05)),
@@ -102,16 +103,16 @@ results_f <- function(study_name, metadata_clean_f) {
       lci = map_dbl(test, ~ .$conf.int[1]),
       uci = map_dbl(test, ~ .$conf.int[2])
     ) %>%
-  select(n_donors, n_patients, effect_size, x, n, estimate, lci, uci)
+  select(simulation, n_donors, n_patients, effect_size, x, n, estimate, lci, uci)
 }
 
+# Data cleaning functions ---------------------------------------------
 cdi_clean <- function(df) {
   df %>%
     filter(DiseaseState %in% c("H", "nonCDI")) %>%
     mutate(case_control = recode(DiseaseState, "H" = "control", "nonCDI" = "case"))
 }
 
-cdi_results <- results_f("cdi_schubert", cdi_clean)
 
 ob_clean <- function(df) {
   df %>%
@@ -120,9 +121,9 @@ ob_clean <- function(df) {
     mutate(case_control = recode(DiseaseState, "H" = "control", "OB" = "case"))
 }
 
-results <- bind_rows(
-  mutate(ob_results, simulation = "ob_goodrich"),
-  mutate(cdi_results, simulation = "cdi_schubert")
-)
+# Run simulations and save results ------------------------------------
+cdi_results <- results_f("cdi_schubert", cdi_clean)
+ob_results <- results_f("ob_goodrich", ob_clean)
 
+results <- bind_rows(cdi_results, ob_results)
 write_tsv(results, "results/16s.tsv")

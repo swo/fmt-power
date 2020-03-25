@@ -15,9 +15,9 @@ rule all:
 rule clean:
     shell: "rm -rf fig/* cache/* data/* results/*"
 
-rule x16s_plot:
+rule plot_16s:
     output: "fig/16s.pdf"
-    input: "plot-16s.R", expand("results/{study}.tsv", study=STUDIES)
+    input: "plot-16s.R", "results/16s.tsv"
     shell: "./plot-16s.R"
 
 rule sigma_plot:
@@ -32,12 +32,13 @@ rule table:
         script="find-min-effect-sizes.R"
     shell: "./find-min-effect-sizes.R {input.files}"
 
-rule analyze:
+rule simulate:
+    wildcard_constraints: x="(gb|sigma|anova)"
     output: "fig/{x}.pdf", "results/{x}.tsv"
     input: "simulate-{x}.R", "utils.R"
     shell: "./simulate-{wildcards.x}.R"
 
-rule analyze_16s:
+rule simulate_16s:
     output: "results/16s.tsv"
     input:
         expand("data/{study}_results/{study}.{file}", study=STUDIES, file=["otu_table.100.denovo", "metadata.txt"]),
@@ -49,11 +50,11 @@ rule extract:
     input: "data/{study}_results.tar.gz"
     shell:
         "tar xvf {input}"
-        " -C raw/ {wildcards.study}_results/{wildcards.file}"
+        " -C data/ {wildcards.study}_results/{wildcards.file}"
 
 rule download:
     output: "data/{study}_results.tar.gz"
     params:
         md5=lambda wc: config["studies"][wc["study"]]["md5"],
         url=lambda wc, output: config["base_url"] + "/" + os.path.basename(output[0])
-    run: "./download-data.R {params.url} {params.md5} {output[0]}"
+    shell: "./download-data.R {params.url} {params.md5} {output[0]}"

@@ -3,17 +3,12 @@
 library(tidyverse)
 
 # Load data
-results <- tibble(study_name = c("cdi_schubert", "ob_goodrich")) %>%
-  mutate(
-    data_fn = str_glue("results/{study_name}.tsv"),
-    data = map(data_fn, read_tsv)
-  ) %>%
-  unnest(cols = c(data))
+results <- read_tsv("results/16s.tsv")
 
 # Plot
 plot <- results %>%
   ggplot(aes(effect_size, estimate)) +
-  facet_grid(study_name ~ n_patients) +
+  facet_grid(simulation ~ n_patients) +
   geom_hline(yintercept = 0.8, linetype = 2) +
   geom_hline(yintercept = c(0, 1)) +
   geom_ribbon(aes(ymin = lci, ymax = uci), fill = "gray") +
