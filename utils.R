@@ -2,7 +2,7 @@ library(tidyverse)
 library(memoise)
 
 set.seed(5)
-global_n_trials <- 1e2
+global_n_trials <- 1e3
 
 # Safe test function
 chisq_p <- function(x) {

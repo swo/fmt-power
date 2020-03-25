@@ -13,7 +13,7 @@ rule all:
         "results/min-effect-sizes.tsv"
 
 rule clean:
-    shell: "rm -rf fig/* cache/* data/*"
+    shell: "rm -rf fig/* cache/* data/* results/*"
 
 rule x16s_plot:
     output: "fig/16s.pdf"
