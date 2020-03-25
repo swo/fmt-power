@@ -5,10 +5,10 @@ library(tidyverse)
 args <- commandArgs(trailingOnly = TRUE)
 
 find_root <- function(data, target = 0.8) {
-  model <- loess(value ~ effect_size, data = data)
-  f <- function(x) predict(model, newdata = list(effect_size = x)) - target
-  if (f(max(model$x)) < 0) return(NA)
-  uniroot(f, range(model$x))$root
+  f <- with(data, { approxfun(effect_size, value) })
+  g <- function(x) f(x) - target
+  if (g(max(data$value)) < 0) return(NA)
+  uniroot(g, range(data$value))$root
 }
 
 results <- tibble(fn = args) %>%
