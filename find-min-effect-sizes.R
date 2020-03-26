@@ -4,11 +4,15 @@ library(tidyverse)
 
 args <- commandArgs(trailingOnly = TRUE)
 
-find_root <- function(data, target = 0.8) {
-  f <- with(data, { approxfun(effect_size, value) })
-  g <- function(x) f(x) - target
-  if (g(max(data$value)) < 0) return(NA)
-  uniroot(g, range(data$value))$root
+find_root <- function(x, y, target = 0.8) {
+  # stop if there are no values to fit
+  if (any(is.na(x) | is.na(y))) return(NA)
+  f <- approxfun(x, y)
+  # stop if the function doesn't cross the target value
+  if (f(max(x)) < target) return(NA)
+  # make a new function with a root at the target value
+  g <- function(xx) f(xx) - target
+  uniroot(g, range(x))$root
 }
 
 results <- tibble(fn = args) %>%
@@ -21,13 +25,9 @@ results <- tibble(fn = args) %>%
       simulation
     )
   ) %>%
-  select_at(c("simulation", "n_donors", "n_patients", "effect_size", "estimate", "lci", "uci")) %>%
-  pivot_longer(c("estimate", "lci", "uci")) %>%
-  nest(data = c(effect_size, value)) %>%
-  mutate(
-    min_effect_size = round(map_dbl(data, find_root), 2)
-  ) %>%
-  select(simulation, n_donors, n_patients, name, min_effect_size) %>%
-  pivot_wider(values_from = min_effect_size)
+  select_at(c("simulation", "n_donors", "n_patients", "effect_size", "estimate")) %>%
+  chop(c(effect_size, estimate)) %>%
+  mutate(min_effect_size = map2_dbl(effect_size, estimate, find_root)) %>%
+  select(simulation, n_donors, n_patients, min_effect_size)
 
 write_tsv(results, "results/min-effect-sizes.tsv")
