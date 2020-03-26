@@ -64,7 +64,7 @@ simulate_f <- function(dissim, case_idx, control_idx, n, delta_p, phi = 0.5) {
   if (length(unique(X)) == 1) return(1.0)
 
   # ignore complete enumeration warnings
-  adonis(Y ~ X, parallel = 2)$aov.tab$`Pr(>F)`[1]
+  adonis(Y ~ X)$aov.tab$`Pr(>F)`[1]
 }
 
 base_results <- crossing(
