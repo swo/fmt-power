@@ -1,6 +1,5 @@
 SIMS = ["sigma", "gb", "anova", "16s"]
 STUDIES = ["ob_goodrich", "cdi_schubert"]
-FIGS = SIMS + ["sigma-spread"]
 
 configfile: "config.yaml"
 
@@ -9,7 +8,7 @@ wildcard_constraints:
 
 rule all:
     input:
-        expand("fig/{fig}.pdf", fig=FIGS),
+        expand("fig/{sim}.pdf", sim=SIMS),
         "results/min-effect-sizes.tsv"
 
 rule clean:
@@ -19,11 +18,6 @@ rule plot_16s:
     output: "fig/16s.pdf"
     input: "plot-16s.R", "results/16s.tsv"
     shell: "./plot-16s.R"
-
-rule sigma_plot:
-    output: "fig/sigma-spread.pdf"
-    input: "plot-sigma-spread.R"
-    shell: "./plot-sigma-spread.R"
 
 rule table:
     output: "results/min-effect-sizes.tsv"
