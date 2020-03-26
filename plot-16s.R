@@ -14,7 +14,7 @@ plot <- results %>%
   geom_ribbon(aes(ymin = lci, ymax = uci), fill = "gray") +
   geom_line(size = 0.7) +
   scale_x_continuous(
-    name = expression(paste("Effect size (", Delta * p, ", %)")),
+    name = expression(paste("Effect size (", Delta * epsilon, ", %)")),
     labels = function(x) x * 100,
     expand = c(0, 0)
   ) +

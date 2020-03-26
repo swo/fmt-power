@@ -23,7 +23,7 @@ results %>%
 
 plot <- plot_f(results) +
   scale_x_continuous(
-    name = expression(paste("Effect size (", Delta * p, ", %)")),
+    name = expression(paste("Effect size (", Delta * epsilon, ", %)")),
     labels = function(x) x * 100,
     expand = c(0, 0)
   ) +
