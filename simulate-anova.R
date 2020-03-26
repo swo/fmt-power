@@ -2,15 +2,19 @@
 
 source("utils.R")
 
+# Effect size is σ_D / (σ_D + σ_P). Convert that to σ_D / σ_P as the "between
+# variance" in the ANOVA power function.
+
 results <- results_base %>%
-  crossing(effect_size = seq(0, 2, length.out = 10)) %>%
+  crossing(effect_size = seq(0, 1, length.out = 10)) %>%
   mutate(
+    between_var = 1 / (1 + (1 / effect_size)),
     estimate = pmap_dbl(
-      list(n_donors, patients_per_donor, effect_size),
+      list(n_donors, patients_per_donor, between_var),
       ~ power.anova.test(groups = ..1, n = ..2, within.var = 1, between.var = ..3)$power
     ),
-    lci = estimate,
-    uci = estimate
+    lci = NA,
+    uci = NA
   )
 
 results %>%
@@ -25,7 +29,7 @@ plot <- results %>%
   geom_hline(yintercept = c(0, 1)) +
   geom_line(size = 0.7) +
   scale_x_continuous(
-    name = expression(paste("Effect size (", sigma[donor] / sigma[patient], ")")),
+    name = expression(paste("Effect size ", sigma[D] / (sigma[D] + sigma[P]))),
     expand = c(0, 0),
     breaks = c(0, 1, 2),
     labels = c("0", "1", "2")
