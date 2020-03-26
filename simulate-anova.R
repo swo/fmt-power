@@ -8,7 +8,7 @@ source("utils.R")
 results <- results_base %>%
   crossing(effect_size = seq(0, 1, length.out = 10)) %>%
   mutate(
-    between_var = 1 / (1 + (1 / effect_size)),
+    between_var = 1 / ((1 / effect_size) - 1),
     estimate = pmap_dbl(
       list(n_donors, patients_per_donor, between_var),
       ~ power.anova.test(groups = ..1, n = ..2, within.var = 1, between.var = ..3)$power
