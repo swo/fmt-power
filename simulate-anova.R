@@ -6,7 +6,7 @@ source("utils.R")
 # variance" in the ANOVA power function.
 
 results <- results_base %>%
-  crossing(effect_size = seq(0, 1, length.out = 10)) %>%
+  crossing(effect_size = seq(0, 1, length.out = global_n_grid)) %>%
   mutate(
     between_var = 1 / ((1 / effect_size) - 1),
     estimate = pmap_dbl(

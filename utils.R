@@ -2,6 +2,7 @@ library(tidyverse)
 library(memoise)
 
 set.seed(5)
+global_n_grid <- 11
 global_n_trials <- 1e3
 
 # Safe test function
@@ -20,7 +21,7 @@ results_base <- crossing(
   filter(n_patients > n_donors) %>%
   mutate(patients_per_donor = n_patients / n_donors)
 
-results_f <- function(simulate_f, lower, upper, cache, n_grid = 10, n_trials = global_n_trials) {
+results_f <- function(simulate_f, lower, upper, cache, n_grid = global_n_grid, n_trials = global_n_trials) {
   simulate_trials <- function(n_donors, patients_per_donor, effect_size) {
     map_dbl(1:n_trials, ~ simulate_f(n_donors, patients_per_donor, effect_size))
   }
