@@ -67,10 +67,9 @@ simulate_f <- function(dissim, case_idx, control_idx, n, delta_p, phi = 0.5) {
   adonis(Y ~ X)$aov.tab$`Pr(>F)`[1]
 }
 
-base_results <- crossing(
-  n_patients = c(12, 24, 48, 96, 192),
-  effect_size = seq(0, 1, length.out = 10)
-)
+results_base <- results_base %>%
+  select(n_patients) %>%
+  crossing(effect_size = seq(0, 1, length.out = global_n_grid))
 
 results_f <- function(study_name, metadata_clean_f) {
   study_data <- load_study_data(study_name, metadata_clean_f)
@@ -91,7 +90,7 @@ results_f <- function(study_name, metadata_clean_f) {
   # memoize
   f <- memoise(simulate_trials, cache = cache_filesystem(str_glue("cache/{study_name}")))
 
-  base_results %>%
+  results_base %>%
     mutate(
       simulation = study_name,
       n_donors = NA,
