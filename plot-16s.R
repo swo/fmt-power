@@ -7,8 +7,10 @@ results <- read_tsv("results/16s.tsv")
 
 # Plot
 plot <- results %>%
+  mutate_at("simulation", ~ recode(., cdi_schubert = "Strong (diarrhea)", ob_goodrich = "Weak (obesity)")) %>%
+  mutate_at(c("n_patients"), ~ fct_rev(factor(.))) %>%
   ggplot(aes(effect_size, estimate)) +
-  facet_grid(simulation ~ n_patients) +
+  facet_grid(n_patients ~ simulation) +
   geom_hline(yintercept = 0.8, linetype = 2) +
   geom_hline(yintercept = c(0, 1)) +
   geom_ribbon(aes(ymin = lci, ymax = uci), fill = "gray") +
@@ -23,6 +25,7 @@ plot <- results %>%
     labels = scales::percent,
     breaks = c(0, 0.5, 0.8, 1)
   ) +
+  coord_fixed(ratio = 0.70) +
   cowplot::theme_half_open() +
   theme(
     panel.spacing = unit(1, "lines"),
