@@ -9,13 +9,12 @@ simulate_base <- function(n_donors, patients_per_donor, phi, p0, p1) {
   chisq_p(cbind(success, patients_per_donor - success))
 }
 
-simulate_f <- function(n_donors, patients_per_donor, delta_p) {
-  p0 <- 0.5 - delta_p / 2
-  p1 <- 0.5 + delta_p / 2
+simulate_f <- function(n_donors, patients_per_donor, p1) {
+  p0 <- 1 - p1
   simulate_base(n_donors, patients_per_donor, 0.5, p0, p1)
 }
 
-results <- results_f(simulate_f, 0, 1, "cache/gb")
+results <- results_f(simulate_f, 0.5, 1, "cache/gb")
 
 results %>%
   select(n_donors, n_patients, effect_size, x, n, estimate, lci, uci) %>%
@@ -23,7 +22,7 @@ results %>%
 
 plot <- plot_f(results) +
   scale_x_continuous(
-    name = expression(paste("Effect size (", Delta * epsilon, ", %)")),
+    name = expression(paste("Effect size (", epsilon[{} + {}], ", %)")),
     labels = function(x) x * 100,
     expand = c(0, 0)
   ) +
