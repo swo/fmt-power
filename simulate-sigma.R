@@ -9,11 +9,12 @@ pdf <- function(p, sigma_lo) dnorm(logit(p), 0, sigma_lo) / (p * (1 - p))
 # Given σ_LO, find σ_p
 slo_to_sp <- function(sigma_lo) {
   f <- function(x) (x - 0.5) ** 2 * pdf(x, sigma_lo)
-  integrate(f, 0, 1)$value
+  sqrt(integrate(f, 0, 1)$value)
 }
 
 # Reverse
-sp_to_slo <- function(sigma_p, interval = c(1e-6, 10)) {
+# (The integral fails for σ_LO > 12 or so)
+sp_to_slo <- function(sigma_p, interval = c(1e-6, 12)) {
   f <- function(x) slo_to_sp(x) - sigma_p
   uniroot(f, interval)$root
 }
@@ -25,7 +26,7 @@ simulate_f <- function(n_donors, patients_per_donor, sigma_p) {
   chisq_p(cbind(success, patients_per_donor - success))
 }
 
-results <- results_f(simulate_f, 0, 0.2, "cache/sigma")
+results <- results_f(simulate_f, 0, 0.4, "cache/sigma")
 
 results %>%
   select(n_donors, n_patients, effect_size, x, n, estimate, lci, uci) %>%

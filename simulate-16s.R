@@ -45,11 +45,10 @@ subset_dissim <- function(dissim, idx) {
     as.dist()
 }
 
-simulate_f <- function(dissim, case_idx, control_idx, n, delta_p, phi = 0.5) {
+simulate_f <- function(dissim, case_idx, control_idx, n, p1, phi = 0.5) {
   # draw donor qualities
   n_good <- rbinom(1, n, phi)
   n_bad <- n - n_good
-  quality <- c(rep(1, n_good), rep(0, n_bad))
 
   # subset dissim matrix
   good_idx <- sample(control_idx, n_good, replace = TRUE)
@@ -57,7 +56,7 @@ simulate_f <- function(dissim, case_idx, control_idx, n, delta_p, phi = 0.5) {
   Y <- subset_dissim(dissim, c(good_idx, bad_idx))
 
   # simulate patient outcomes
-  donor_p <- 0.5 - delta_p / 2 + delta_p * quality
+  donor_p <- c(rep(p1, n_good), rep(1 - p1, n_bad))
   X <- rbinom(n, 1, donor_p)
 
   # if outcomes are all 0 or all 1, pval = 1.0
@@ -69,7 +68,7 @@ simulate_f <- function(dissim, case_idx, control_idx, n, delta_p, phi = 0.5) {
 
 results_base <- results_base %>%
   select(n_patients) %>%
-  crossing(effect_size = seq(0, 1, length.out = global_n_grid))
+  crossing(effect_size = seq(0.5, 1, length.out = global_n_grid))
 
 results_f <- function(study_name, metadata_clean_f) {
   study_data <- load_study_data(study_name, metadata_clean_f)
