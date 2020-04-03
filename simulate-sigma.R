@@ -26,18 +26,11 @@ simulate_f <- function(n_donors, patients_per_donor, sigma_p) {
   chisq_p(cbind(success, patients_per_donor - success))
 }
 
-results <- results_f(simulate_f, 0, 0.4, "cache/sigma")
+# this allows for sourcing the script without running this simulations
+if (sys.nframe() == 0) {
+  results <- results_f(simulate_f, 0, 0.4, "cache/sigma")
 
-results %>%
-  select(n_donors, n_patients, effect_size, x, n, estimate, lci, uci) %>%
-  write_tsv("results/sigma.tsv")
-
-plot <- plot_f(results) +
-  scale_x_continuous(
-    name = expression(paste("Effect size (", sigma[p], ")")),
-    breaks = c(0, 0.1, 0.2),
-    labels = c("0", "0.1", "0.2")
-  ) +
-  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
-
-ggsave("fig/sigma.pdf")
+  results %>%
+    select(n_donors, n_patients, effect_size, x, n, estimate, lci, uci) %>%
+    write_tsv("results/sigma.tsv")
+}

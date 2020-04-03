@@ -20,26 +20,3 @@ results <- results_base %>%
 results %>%
   select(n_donors, n_patients, effect_size, estimate, lci, uci) %>%
   write_tsv("results/anova.tsv")
-
-plot <- results %>%
-  mutate_at(c("n_patients"), ~ fct_rev(factor(.))) %>%
-  ggplot(aes(effect_size, estimate)) +
-  facet_grid(n_patients ~ n_donors) +
-  geom_hline(yintercept = 0.8, linetype = 2) +
-  geom_hline(yintercept = c(0, 1)) +
-  geom_line(size = 0.7) +
-  scale_x_continuous(
-    name = expression(paste("Effect size ", sigma[D] / (sigma[D] + sigma[P]))),
-    expand = c(0, 0),
-    breaks = c(0, 1, 2),
-    labels = c("0", "1", "2")
-  ) +
-  scale_y_continuous(
-    name = "Statistical power",
-    labels = scales::percent,
-    breaks = c(0, 0.5, 0.8, 1)
-  ) +
-  cowplot::theme_half_open() +
-  theme(panel.spacing = unit(1, "lines"))
-
-ggsave("fig/anova.pdf")

@@ -8,16 +8,11 @@ wildcard_constraints:
 
 rule all:
     input:
-        expand("fig/{sim}.pdf", sim=SIMS),
+        expand("results/{sim}.tsv", sim=SIMS),
         "results/min-effect-sizes.tsv"
 
 rule clean:
     shell: "rm -rf fig/* cache/* data/* results/*"
-
-rule plot_16s:
-    output: "fig/16s.pdf"
-    input: "plot-16s.R", "results/16s.tsv"
-    shell: "./plot-16s.R"
 
 rule table:
     output: "results/min-effect-sizes.tsv"
@@ -28,7 +23,7 @@ rule table:
 
 rule simulate:
     wildcard_constraints: x="(gb|sigma|anova)"
-    output: "fig/{x}.pdf", "results/{x}.tsv"
+    output: "results/{x}.tsv"
     input: "simulate-{x}.R", "utils.R"
     shell: "./simulate-{wildcards.x}.R"
 

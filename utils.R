@@ -40,21 +40,3 @@ results_f <- function(simulate_f, lower, upper, cache, n_grid = global_n_grid, n
       uci = map_dbl(test, ~ .$conf.int[2])
     )
 }
-
-plot_f <- function(results) {
-  results %>%
-    mutate_at(c("n_patients"), ~ fct_rev(factor(.))) %>%
-    ggplot(aes(effect_size, estimate)) +
-    facet_grid(n_patients ~ n_donors) +
-    geom_hline(yintercept = 0.8, linetype = 2) +
-    geom_hline(yintercept = c(0, 1)) +
-    geom_ribbon(aes(ymin = lci, ymax = uci), fill = "gray") +
-    geom_line(size = 0.7) +
-    scale_y_continuous(
-      name = "Statistical power",
-      labels = scales::percent,
-      breaks = c(0, 0.5, 0.8, 1)
-    ) +
-    cowplot::theme_half_open() +
-    theme(panel.spacing = unit(1, "lines"))
-}

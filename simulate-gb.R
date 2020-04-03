@@ -19,13 +19,3 @@ results <- results_f(simulate_f, 0.5, 1, "cache/gb")
 results %>%
   select(n_donors, n_patients, effect_size, x, n, estimate, lci, uci) %>%
   write_tsv("results/gb.tsv")
-
-plot <- plot_f(results) +
-  scale_x_continuous(
-    name = expression(paste("Effect size (", epsilon[{} + {}], ", %)")),
-    labels = function(x) x * 100,
-    expand = c(0, 0)
-  ) +
-  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
-
-ggsave("fig/gb.pdf")
