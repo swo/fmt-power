@@ -1,13 +1,12 @@
 #!/usr/bin/env Rscript
 
-source("utils.R")
-
 invlogit <- function(lo) 1 / (1 + exp(-lo))
 logit <- function(p) log(p / (1 - p))
 pdf <- function(p, sigma_lo) dnorm(logit(p), 0, sigma_lo) / (p * (1 - p))
 
 # Given σ_LO, find σ_p
 slo_to_sp <- function(sigma_lo) {
+  if (sigma_lo < 0) stop("σ_LO value outside range")
   f <- function(x) (x - 0.5) ** 2 * pdf(x, sigma_lo)
   sqrt(integrate(f, 0, 1)$value)
 }
@@ -15,6 +14,7 @@ slo_to_sp <- function(sigma_lo) {
 # Reverse
 # (The integral fails for σ_LO > 12 or so)
 sp_to_slo <- function(sigma_p, interval = c(1e-6, 12)) {
+  if (!between(sigma_p, 0, 0.4)) stop("σ_p value outside range")
   f <- function(x) slo_to_sp(x) - sigma_p
   uniroot(f, interval)$root
 }
@@ -28,6 +28,8 @@ simulate_f <- function(n_donors, patients_per_donor, sigma_p) {
 
 # this allows for sourcing the script without running this simulations
 if (sys.nframe() == 0) {
+  source("utils.R")
+
   results <- results_f(simulate_f, 0, 0.4, "cache/sigma")
 
   results %>%
