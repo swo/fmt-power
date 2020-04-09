@@ -20,7 +20,7 @@ rule simulate_16s:
     output: "results/16s.tsv"
     input:
         expand("data/{study}_results/{study}.{file}", study=STUDIES, file=["otu_table.100.denovo", "metadata.txt"]),
-        script="simulate-16s.R", "utils.R"
+        "utils.R", script="simulate-16s.R"
     shell: "./{input.script}"
 
 rule extract:
@@ -41,6 +41,6 @@ rule download:
 rule simulate:
     # wildcard_constraints: x="(gb|mannwhitney|anova)"
     output: "results/{x}.tsv"
-    input: script="simulate-{x}.R", "utils.R"
+    input: "utils.R", script="simulate-{x}.R"
     shell: "./{input.script}"
 
