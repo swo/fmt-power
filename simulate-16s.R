@@ -91,7 +91,7 @@ results_f <- function(study_name, metadata_clean_f) {
     mutate(
       simulation = study_name,
       n_donors = n_patients,
-      p_values = pmap(list(n_patients, effect_size), simulate_trials),
+      p_values = pmap(list(n_patients, effect_size), f),
       x = map_dbl(p_values, ~ sum(. <= 0.05)),
       n = map_dbl(p_values, length),
       estimate = x / n
