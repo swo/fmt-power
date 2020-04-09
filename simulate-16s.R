@@ -80,8 +80,9 @@ results_f <- function(study_name, metadata_clean_f) {
   # multi draw
   simulate_trials <- function(n_patients, effect_size) {
     map_dbl(1:global_n_trials, ~ simulate_f(dissim, case_idx, control_idx, n_patients, effect_size))
-  } %>%
-    memoise(cache = cache_filesystem(str_glue("cache/{study_name}")))
+  }
+
+  f <- memoise(simulate_trials, cache = cache_filesystem(str_glue("cache/{study_name}")))
 
   crossing(
     n_patients = global_n_patients,
