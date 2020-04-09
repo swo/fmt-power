@@ -4,6 +4,7 @@ library(memoise)
 set.seed(5)
 global_n_grid <- 11
 global_n_trials <- 1e3
+global_n_donors = c(2, 4, 6, 12),
 
 # Safe test function
 chisq_p <- function(x) {
@@ -21,7 +22,10 @@ results_base <- crossing(
   filter(n_patients > n_donors) %>%
   mutate(patients_per_donor = n_patients / n_donors)
 
-results_f <- function(simulate_f, lower, upper, cache, n_grid = global_n_grid, n_trials = global_n_trials) {
+results_f <- function(
+  results_base, simulate_f, lower, upper, cache,
+  n_grid = global_n_grid, n_trials = global_n_trials
+) {
   simulate_trials <- function(n_donors, patients_per_donor, effect_size) {
     map_dbl(1:n_trials, ~ simulate_f(n_donors, patients_per_donor, effect_size))
   }
@@ -34,9 +38,6 @@ results_f <- function(simulate_f, lower, upper, cache, n_grid = global_n_grid, n
       p_values = pmap(list(n_donors, patients_per_donor, effect_size), f),
       x = map_dbl(p_values, ~ sum(. <= 0.05)),
       n = map_dbl(p_values, length),
-      test = map2(x, n, binom.test),
-      estimate = x / n,
-      lci = map_dbl(test, ~ .$conf.int[1]),
-      uci = map_dbl(test, ~ .$conf.int[2])
+      estimate = x / n
     )
 }

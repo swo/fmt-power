@@ -17,5 +17,5 @@ simulate_f <- function(n_donors, patients_per_donor, p1) {
 results <- results_f(simulate_f, 0.5, 1, "cache/gb")
 
 results %>%
-  select(n_donors, n_patients, effect_size, x, n, estimate, lci, uci) %>%
+  select(n_donors, n_patients, effect_size, x, n, estimate) %>%
   write_tsv("results/gb.tsv")

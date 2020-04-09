@@ -66,10 +66,6 @@ simulate_f <- function(dissim, case_idx, control_idx, n, p1, phi = 0.5) {
   adonis(Y ~ X)$aov.tab$`Pr(>F)`[1]
 }
 
-results_base <- results_base %>%
-  select(n_patients) %>%
-  crossing(effect_size = seq(0.5, 1, length.out = global_n_grid))
-
 results_f <- function(study_name, metadata_clean_f) {
   study_data <- load_study_data(study_name, metadata_clean_f)
   metadata <- study_data$metadata
@@ -84,24 +80,22 @@ results_f <- function(study_name, metadata_clean_f) {
   # multi draw
   simulate_trials <- function(n_patients, effect_size) {
     map_dbl(1:global_n_trials, ~ simulate_f(dissim, case_idx, control_idx, n_patients, effect_size))
-  }
+  } %>%
+    memoise(cache = cache_filesystem(str_glue("cache/{study_name}")))
 
-  # memoize
-  f <- memoise(simulate_trials, cache = cache_filesystem(str_glue("cache/{study_name}")))
-
-  results_base %>%
+  crossing(
+    n_patients = global_n_patients,
+    effect_size = seq(0.5, 1, length.out = global_n_grid)
+  ) %>%
     mutate(
       simulation = study_name,
-      n_donors = NA,
-      p_values = pmap(list(n_patients, effect_size), f),
+      n_donors = n_patients,
+      p_values = pmap(list(n_patients, effect_size), simulate_trials),
       x = map_dbl(p_values, ~ sum(. <= 0.05)),
       n = map_dbl(p_values, length),
-      test = map2(x, n, binom.test),
-      estimate = x / n,
-      lci = map_dbl(test, ~ .$conf.int[1]),
-      uci = map_dbl(test, ~ .$conf.int[2])
+      estimate = x / n
     ) %>%
-  select(simulation, n_donors, n_patients, effect_size, x, n, estimate, lci, uci)
+  select(simulation, n_donors, n_patients, effect_size, x, n, estimate)
 }
 
 # Data cleaning functions ---------------------------------------------
@@ -110,7 +104,6 @@ cdi_clean <- function(df) {
     filter(DiseaseState %in% c("H", "nonCDI")) %>%
     mutate(case_control = recode(DiseaseState, "H" = "control", "nonCDI" = "case"))
 }
-
 
 ob_clean <- function(df) {
   df %>%

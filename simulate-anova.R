@@ -12,9 +12,7 @@ results <- results_base %>%
     estimate = pmap_dbl(
       list(n_donors, patients_per_donor, between_var),
       ~ power.anova.test(groups = ..1, n = ..2, within.var = 1, between.var = ..3)$power
-    ),
-    lci = NA,
-    uci = NA
+    )
   )
 
 results %>%
