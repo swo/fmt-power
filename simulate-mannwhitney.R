@@ -5,11 +5,11 @@ source("utils.R")
 invlogit <- function(lo) 1 / (1 + exp(-lo))
 
 # Simulate one trial
-simulate <- function(n, lor) {
+simulate <- function(n, or) {
   # Simulate donor biomarkers
   x <- rnorm(n)
   # Donor efficacies determined by their biomarkers
-  p <- invlogit(x * lor)
+  p <- invlogit(x * log(or))
   # Simulate patient outcomes
   outcome <- as.logical(rbinom(n, 1, p))
   # Compare donor biomarkers based on patient outcomes
@@ -21,8 +21,8 @@ simulate <- function(n, lor) {
   }
 }
 
-simulate_trials <- function(n, lor) {
-  map_dbl(1:global_n_trials, ~ simulate(n, lor))
+simulate_trials <- function(n, or) {
+  map_dbl(1:global_n_trials, ~ simulate(n, or))
 }
 
 f <- memoise(simulate_trials, cache = cache_filesystem("cache/mannwhitney"))
@@ -30,7 +30,7 @@ f <- memoise(simulate_trials, cache = cache_filesystem("cache/mannwhitney"))
 results <- crossing(
   simulation = "mannwhitney",
   n_patients = global_n_patients,
-  effect_size = seq(0, 3, length.out = global_n_grid)
+  effect_size = seq(1, 25, length.out = global_n_grid)
 ) %>%
   mutate(
     n_donors = n_patients,
