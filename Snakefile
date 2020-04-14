@@ -1,4 +1,4 @@
-SIMS = ["mannwhitney", "gb", "anova", "16s"]
+SIMS = ["mannwhitney", "contingency", "anova", "16s"]
 STUDIES = ["ob_goodrich", "cdi_schubert"]
 
 configfile: "config.yaml"
@@ -39,7 +39,6 @@ rule download:
     shell: "./download-data.R {params.url} {params.md5} {output[0]}"
 
 rule simulate:
-    # wildcard_constraints: x="(gb|mannwhitney|anova)"
     output: "results/{x}.tsv"
     input: "utils.R", script="simulate-{x}.R"
     shell: "./{input.script}"

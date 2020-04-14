@@ -28,7 +28,7 @@ simulate_trials <- function(n_donors, patients_per_donor, effect_size) {
   )
 }
 
-f <- memoise(simulate_trials, cache = cache_filesystem("cache/gb"))
+f <- memoise(simulate_trials, cache = cache_filesystem("cache/contingency"))
 
 results <- crossing(
   n_patients = global_n_patients,
@@ -44,4 +44,4 @@ results <- crossing(
   ) %>%
   select(n_donors, n_patients, effect_size, x, n, estimate)
 
-write_tsv(results, "results/gb.tsv")
+write_tsv(results, "results/contingency.tsv")
