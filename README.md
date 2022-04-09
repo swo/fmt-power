@@ -1,5 +1,10 @@
 # Power calculations for detecting differences in efficacy of fecal microbiota donors
 
+Calculations for the manuscript: Power calculations for detecting differences
+in efficacy of fecal microbiota donors. *Contemporary Clinical Trials
+Communications* (2020). doi: 10.1016/j.conctc.2020.100674 pubmed: 33241161 pmc:
+PMC7672275
+
 ## Getting started
 
 Dependencies:
